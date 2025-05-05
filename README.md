@@ -2,7 +2,7 @@
 A little personal game project I use as a creative outlet.
 It's supposed to become a minimalist fantasy game with a tiny world that feels big.
 The game features 1990-2000 style assets with vertex lighting to give off that specific vibe.
-This README page will be updated with more information as this project progresses.
+This README page will be updated with more information as the project progresses.
 
 ## Tools
 To make this project fun, I'm choosing to develop this game in a very suckless way with just Raylib and C.
