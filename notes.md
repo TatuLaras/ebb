@@ -1,6 +1,7 @@
 # Todo
+- FPV controller and player physics
+- Separate repo for all common stuff
 - Asset configuration file
-- Unlit models
 - Assets with multiple models
 - Animated texture / spritesheet (unlit)
 - Music system
@@ -10,9 +11,13 @@
 - Sphere plane collision
 - Collider editing in noble
 
+## Noble
+- Re-align to grid
+- Grid based editing
+- Edit player colliders / bounds for scene
+
 ## Assets
 - Fireplace
-- Stone wall
 - Tavern table
 - Tavern bench
 - Tavern bar
