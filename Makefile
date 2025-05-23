@@ -1,15 +1,24 @@
+USE_LOCAL_SYMLINK = no
+NAME = ebb
 BUILD_DIR = build
 BUILD_DIR_TESTS = build/tests
 SRC_DIR = src
-SRC_INCLUDE = src/include
 SRC_DIR_TESTS = test
 UNITY_DIR = external/unity
 
+ifeq ($(USE_LOCAL_SYMLINK),no)
+EXTERNAL_INCLUDE = -Ilibebb/src -Iexternal/include
+else
+EXTERNAL_INCLUDE = -Ilnlibebb/src -Iexternal/include
+endif
+
+
 CC = gcc
-PACKAGES = $(shell pkg-config --libs raylib)
+PACKAGES = $(shell pkg-config --libs raylib opengl) -lm
 SANITIZE = -fsanitize=address
-CFLAGS = $(PACKAGES) -Wall -Wextra -Wshadow -pedantic -Wstrict-prototypes -march=native
-CFLAGS_TEST = -DTEST -I$(UNITY_DIR) -I$(SRC_INCLUDE) -ggdb $(SANITIZE)
+CFLAGS = $(PACKAGES) $(EXTERNAL_INCLUDE) -Wall -Wextra -Wshadow -pedantic -Wstrict-prototypes -march=native -O0
+CFLAGS_TEST = $(PACKAGES) -DTEST -I$(UNITY_DIR) -I$(SRC_DIR) -I$(EXTERNAL_INCLUDE) -ggdb $(SANITIZE) -std=c23
+
 CFLAGS_DEBUG = $(CFLAGS) -DDEBUG -ggdb
 CFLAGS_ASAN = $(CFLAGS) -DDEBUG $(SANITIZE)
 CFLAGS_RELEASE = $(CFLAGS) -DNDEBUG -Ofast
@@ -19,29 +28,35 @@ ARGS =
 
 # Build program
 
-SRC = $(wildcard $(SRC_DIR)/*.c)
+ifeq ($(USE_LOCAL_SYMLINK),no)
+SRC = $(wildcard $(SRC_DIR)/*.c) $(wildcard libebb/src/*.c)
+else
+SRC = $(wildcard $(SRC_DIR)/*.c) $(wildcard lnlibebb/src/*.c)
+endif
 
-release: $(BUILD_DIR) $(BUILD_DIR)/release
 debug: $(BUILD_DIR) $(BUILD_DIR)/debug
+release: $(BUILD_DIR) $(BUILD_DIR)/release
+install: release
+	cp $(BUILD_DIR)/release /usr/bin/$(NAME)
 asan: $(BUILD_DIR) $(BUILD_DIR)/asan
 
-run: $(BUILD_DIR) $(BUILD_DIR)/release
-	@echo "Warning: no address sanitation enabled, consider running with with 'make run_asan' when developing."
-	$(BUILD_DIR)/release $(ARGS)
+run: $(BUILD_DIR) $(BUILD_DIR)/debug
+	@echo "WARNING: no address sanitation enabled, consider running with 'make run_asan' when developing."
+	$(BUILD_DIR)/debug $(ARGS)
 
 run_asan: $(BUILD_DIR) $(BUILD_DIR)/asan
 	$(BUILD_DIR)/asan $(ARGS)
 
 $(BUILD_DIR)/debug: $(SRC)
-	@echo "Building debug build"
+	@echo "INFO: Building debug build"
 	$(CC) -o $@ $^ $(CFLAGS_DEBUG)
 
 $(BUILD_DIR)/release: $(SRC)
-	@echo "Building release build"
+	@echo "INFO: Building release build"
 	$(CC) -o $@ $^ $(CFLAGS_RELEASE)
 
 $(BUILD_DIR)/asan: $(SRC)
-	@echo "Building address sanitation build"
+	@echo "INFO: Building address sanitation build"
 	$(CC) -o $@ $^ $(CFLAGS_ASAN)
 
 
@@ -54,7 +69,8 @@ $(BUILD_DIR_TESTS):
 
 # Build and run tests
 
-SRC_FOR_TESTS = $(filter-out $(SRC_DIR)/main.c, $(SRC)) $(wildcard $(UNITY_DIR)/*.c)
+TEST_IGNORE = $(SRC_DIR)/main.c $(SRC_DIR)/model_files.c $(SRC_DIR)/game_interface.c $(SRC_DIR)/scene.c
+SRC_FOR_TESTS = $(filter-out $(TEST_IGNORE), $(SRC)) $(wildcard $(UNITY_DIR)/*.c)
 OBJS_TESTS = $(patsubst $(SRC_DIR_TESTS)/%.c, $(BUILD_DIR_TESTS)/%.o, $(wildcard $(SRC_DIR_TESTS)/test_*.c))
 
 test: $(BUILD_DIR_TESTS) run_tests
