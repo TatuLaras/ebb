@@ -7,6 +7,7 @@
 #include "scene.h"
 #include "scene_file.h"
 #include "skyboxes.h"
+#include "systems.h"
 #include "terrain.h"
 #include "terrain_textures.h"
 #include <raylib.h>
@@ -33,14 +34,17 @@ static inline void load_scene(const char *scene_filepath) {
 
 static inline void handle_inputs(void) {
     if (IsMouseButtonDown(MOUSE_BUTTON_MIDDLE)) {
-        orbital_camera_update(&camera);
+        orbital_camera_update(&camera, 0);
         return;
     }
 }
 
 int game_init(void) {
+    systems_init();
+    // Add systems
+
     scene_init();
-    lighting_scene_init(BLACK);
+    lighting_scene_init(BLACK, 0, 0);
 
     assets_fetch_all("assets");
     skyboxes_fetch_all("skyboxes");
@@ -64,6 +68,7 @@ int game_init(void) {
 void game_main(void) {
     while (!WindowShouldClose()) {
         handle_inputs();
+        systems_run_update();
         rendering_render(camera);
     }
 }

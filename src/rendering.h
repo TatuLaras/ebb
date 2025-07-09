@@ -1,8 +1,9 @@
 #ifndef _RENDERING
 #define _RENDERING
 
-// Renders the scene, terrain included.
+// Rendering system
+
 #include <raylib.h>
-void rendering_render(Camera camera);
+void rendering_update(void);
 
 #endif
