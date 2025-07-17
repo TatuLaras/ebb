@@ -1,5 +1,6 @@
+#include "firewatch.h"
 #include "game.h"
-#include "raylib.h"
+#include <raylib.h>
 #include <stddef.h>
 
 int main(int argc, char **argv) {

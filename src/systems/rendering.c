@@ -1,6 +1,7 @@
 #include "rendering.h"
 #include "components.h"
 #include "entities.h"
+#include "models.h"
 #include <assert.h>
 #include <raylib.h>
 #include <raymath.h>
@@ -9,7 +10,7 @@
 
 static RenderTexture scene_render_target = {0};
 
-void rendering_render(void) {
+void sysupdate_rendering(void) {
     if (!scene_render_target.id || IsWindowResized()) {
         if (scene_render_target.id)
             UnloadRenderTexture(scene_render_target);
@@ -20,7 +21,7 @@ void rendering_render(void) {
     EntityHandle camera_entity = 0;
     if (entities_query_one(COMPONENT_ID_CAMERA, &camera_entity)) {
         fprintf(stderr, "ERROR (rendering_render): No entity with Camera "
-                        "component in the scene.");
+                        "component in the scene.\n");
         return;
     };
 
@@ -28,16 +29,23 @@ void rendering_render(void) {
     assert(camera);
 
     EntityHandleVector entities =
-        entities_query(COMPONENT_ID_MESH | COMPONENT_ID_RENDERABLE);
+        entities_query(COMPONENT_ID_MODEL | COMPONENT_ID_RENDERABLE);
 
     BeginTextureMode(scene_render_target);
-    ClearBackground((Color){0});
+    ClearBackground(RED);
     BeginMode3D(*camera);
 
+    DrawGrid(10, 1);
     for (size_t i = 0; i < entities.data_used; i++) {
         //  TODO: Does a linear search each time, make method that returns an
         //  array of component pointers.
-        Mesh *mesh = components_get_Mesh(i);
+        ModelComponent *model_component = components_get_ModelComponent(i);
+        assert(model_component);
+        assert(model_component->model_handle);
+
+        Model *model = models_get(model_component->model_handle);
+        assert(model);
+        assert(model->meshCount);
 
         // Optional component
         Matrix *optional_transform = components_get_TransformComponent(i);
@@ -45,7 +53,7 @@ void rendering_render(void) {
         if (optional_transform)
             transform = *optional_transform;
 
-        DrawMesh(*mesh, LoadMaterialDefault(), transform);
+        DrawMesh(model->meshes[0], model->materials[0], transform);
     }
 
     EndMode3D();

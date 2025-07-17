@@ -3,7 +3,6 @@
 
 // Rendering system
 
-#include <raylib.h>
-void rendering_update(void);
+void sysupdate_rendering(void);
 
 #endif

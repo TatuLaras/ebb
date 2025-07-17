@@ -7,16 +7,16 @@ SRC_DIR_TESTS = test
 UNITY_DIR = external/unity
 
 ifeq ($(USE_LOCAL_SYMLINK),no)
-EXTERNAL_INCLUDE = -Ilibebb/src -Iexternal/include
+EXTERNAL_INCLUDE = -Ilibebb/src -Ilibebb/external -Iexternal/include
 else
-EXTERNAL_INCLUDE = -Ilnlibebb/src -Iexternal/include
+EXTERNAL_INCLUDE = -Ilnlibebb/src -Ilnlibebb/external -Iexternal/include
 endif
 
 
 CC = gcc
 PACKAGES = $(shell pkg-config --libs raylib opengl) -lm
 SANITIZE = -fsanitize=address
-CFLAGS = $(PACKAGES) $(EXTERNAL_INCLUDE) -Wall -Wextra -Wshadow -pedantic -Wstrict-prototypes -march=native -O0
+CFLAGS = $(PACKAGES) $(EXTERNAL_INCLUDE) -I$(SRC_DIR) -Wall -Wextra -Wshadow -pedantic -Wstrict-prototypes -march=native -O0
 CFLAGS_TEST = $(PACKAGES) -DTEST -I$(UNITY_DIR) -I$(SRC_DIR) -I$(EXTERNAL_INCLUDE) -ggdb $(SANITIZE) -std=c23
 
 CFLAGS_DEBUG = $(CFLAGS) -DDEBUG -ggdb
@@ -29,9 +29,9 @@ ARGS =
 # Build program
 
 ifeq ($(USE_LOCAL_SYMLINK),no)
-SRC = $(wildcard $(SRC_DIR)/*.c) $(wildcard libebb/src/*.c)
+SRC = $(wildcard $(SRC_DIR)/*.c) $(wildcard $(SRC_DIR)/systems/*.c) $(wildcard libebb/src/*.c)
 else
-SRC = $(wildcard $(SRC_DIR)/*.c) $(wildcard lnlibebb/src/*.c)
+SRC = $(wildcard $(SRC_DIR)/*.c) $(wildcard $(SRC_DIR)/systems/*.c) $(wildcard lnlibebb/src/*.c)
 endif
 
 debug: $(BUILD_DIR) $(BUILD_DIR)/debug
